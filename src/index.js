@@ -3,9 +3,29 @@ dotenv.config()
 
 import cron from 'node-cron'
 import pino from 'pino'
+import NatsClient from './nats-client.js'
 import { scan } from './scan.js'
 
 const logger = pino({ level: process.env.LOG_LEVEL })
+
+const natsClient = new NatsClient({
+  logger,
+  servers: process.env.NATS_URL,
+})
+
+await natsClient.connect()
+
+const gracefulShutdown = () => {
+  logger.info('Shutting down')
+
+  natsClient.disconnect()
+    .finally(() => {
+      process.exit(0)
+    })
+}
+
+process.on('SIGINT', gracefulShutdown)
+process.on('SIGTERM', gracefulShutdown)
 
 process.on('uncaughtException', (err) => {
   logger.error(err);
@@ -19,7 +39,7 @@ process.on('unhandledRejection', (err) => {
 
 cron.schedule('*/10 * * * * *', async () => {
   try {
-    await scan()
+    await scan(natsClient)
   } catch (e) {
     logger.error(e)
   }
