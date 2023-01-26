@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
 
-import * as process from 'node:process'
 import axios from 'axios'
 import pino from 'pino'
 import { subjects } from '@lutria/nats-common/src/index.js'
@@ -11,8 +10,6 @@ const apiUser = process.env.API_USER
 const authHeader = "x-user"
 
 const logger = pino({ level: process.env.LOG_LEVEL })
-
-// const STREAM_SCAN_REQUEST_SUBJECT = "events.stream_scan_request"
 
 async function scanStream(natsClient, stream) {
   const { id: streamId, name, scanCursor, externalId, externalType, security } = stream
@@ -28,7 +25,7 @@ async function scanStream(natsClient, stream) {
 
   logger.info(`Sending message to ${subjects.STREAM_SCAN_REQUEST} for stream ${streamId}`)
 
-  await natsClient.publish(STREAM_SCAN_REQUEST_SUBJECT, message)
+  await natsClient.publish(subjects.STREAM_SCAN_REQUEST, message)
 }
 
 export async function scan(natsClient) {

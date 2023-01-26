@@ -9,6 +9,7 @@
   "author": "dave@lutria.dev",
   "license": "ISC",
   "dependencies": {
+    "@lutria/nats-common": "github:lutria/nats-common",
     "axios": "^1.2.3",
     "dotenv": "^16.0.3",
     "node-cron": "^3.0.2",
