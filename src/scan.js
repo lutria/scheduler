@@ -4,6 +4,7 @@ dotenv.config()
 import * as process from 'node:process'
 import axios from 'axios'
 import pino from 'pino'
+import { subjects } from '@lutria/nats-common/src/index.js'
 
 const apiServiceUrl = process.env.API_SERVICE_URL
 const apiUser = process.env.API_USER
@@ -11,7 +12,7 @@ const authHeader = "x-user"
 
 const logger = pino({ level: process.env.LOG_LEVEL })
 
-const STREAM_SCAN_REQUEST_SUBJECT = "work.stream_scan_request"
+// const STREAM_SCAN_REQUEST_SUBJECT = "events.stream_scan_request"
 
 async function scanStream(natsClient, stream) {
   const { id: streamId, name, scanCursor, externalId, externalType, security } = stream
@@ -25,25 +26,9 @@ async function scanStream(natsClient, stream) {
     security
   }
 
-  logger.info(`Sending message to ${STREAM_SCAN_REQUEST_SUBJECT} for stream ${streamId}`)
+  logger.info(`Sending message to ${subjects.STREAM_SCAN_REQUEST} for stream ${streamId}`)
 
   await natsClient.publish(STREAM_SCAN_REQUEST_SUBJECT, message)
-  // logger.info(`Updating stream with id ${stream.id}`)
-
-  // const data = {
-    // state: "SCAN_REQUESTED"
-  // }
-
-  // const url = `${apiServiceUrl}/stream/${stream.id}`
-  // logger.debug(`Url: ${url}`)
-
-  // const response = await axios.put(url, data, {
-    // headers: {
-      // [authHeader]: apiUser
-    // }
-  // })
-
-  // logger.debug(`Got response code: ${response.status}`)
 }
 
 export async function scan(natsClient) {

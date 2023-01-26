@@ -3,13 +3,14 @@ dotenv.config()
 
 import cron from 'node-cron'
 import pino from 'pino'
-import NatsClient from './nats-client.js'
+import { NatsClient } from '@lutria/nats-common/src/index.js'
 import { scan } from './scan.js'
 
 const logger = pino({ level: process.env.LOG_LEVEL })
 
 const natsClient = new NatsClient({
   logger,
+  name: 'scheduler',
   servers: process.env.NATS_URL,
 })
 
