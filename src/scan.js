@@ -1,6 +1,8 @@
 import axios from "axios";
+import crypto from "crypto";
 import pino from "pino";
-import { subjects } from "@lutria/nats-common/src/index.js";
+import { subjects } from "@lutria/nats-common";
+import { EventType } from "@lutria/types";
 
 const apiServiceUrl = process.env.API_SERVICE_URL;
 const apiUser = process.env.API_USER;
@@ -10,8 +12,8 @@ const logger = pino({ level: process.env.LOG_LEVEL });
 
 async function scanStream(natsClient, stream) {
   const {
-    id: streamId,
-    name,
+    name: streamName,
+    source: { name: sourceName },
     scanCursor,
     externalId,
     externalType,
@@ -19,8 +21,10 @@ async function scanStream(natsClient, stream) {
   } = stream;
 
   const message = {
-    streamId,
-    name,
+    eventId: crypto.randomUUID,
+    type: EventType.StreamScanRequest,
+    sourceName,
+    streamName,
     scanCursor,
     externalId,
     externalType,
@@ -28,7 +32,7 @@ async function scanStream(natsClient, stream) {
   };
 
   logger.info(
-    `Sending message to ${subjects.STREAM_SCAN_REQUEST} for stream ${streamId}`
+    `Sending message to ${subjects.STREAM_SCAN_REQUEST} for stream ${streamName}`
   );
 
   await natsClient.publish(subjects.STREAM_SCAN_REQUEST, message);
